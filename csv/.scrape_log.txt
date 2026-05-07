@@ -1,0 +1,42 @@
+/home/ronyhell/Documentos/Scraping Merito 2026/scripts/scrape_pdf.py:1191: UserWarning: Cell contents too long (37945), truncated to 32767 characters
+  df_detalle.to_excel(detalle_xlsx, index=False)
+/home/ronyhell/Documentos/Scraping Merito 2026/scripts/scrape_pdf.py:1200: UserWarning: Cell contents too long (37945), truncated to 32767 characters
+  df_resumen.to_excel(resumen_xlsx, index=False)
+Leyendo PDF: PDF/VERSIÓN 2. CONVOCATORIAS CONCURSO DE MÉRTOS RES 108 DEL 23 DE ABRIL DE 2026.pdf
+Detectadas 278 convocatorias en 0.0s
+  [10/278] conv 10  pp58-62  | 1.8 conv/s  ETA 150s
+  [20/278] conv 20  pp113-117  | 2.1 conv/s  ETA 124s
+  [30/278] conv 30  pp173-179  | 2.1 conv/s  ETA 117s
+  [40/278] conv 40  pp233-237  | 2.2 conv/s  ETA 110s
+  [50/278] conv 50  pp288-293  | 2.2 conv/s  ETA 102s
+  [60/278] conv 60  pp339-343  | 2.3 conv/s  ETA 95s
+  [70/278] conv 70  pp388-392  | 2.3 conv/s  ETA 89s
+  [80/278] conv 81  pp445-448  | 2.4 conv/s  ETA 84s
+  [90/278] conv 92  pp503-507  | 2.4 conv/s  ETA 80s
+  [100/278] conv 102  pp558-571  | 2.3 conv/s  ETA 77s
+  [110/278] conv 113  pp627-631  | 2.3 conv/s  ETA 72s
+  [120/278] conv 123  pp677-682  | 2.4 conv/s  ETA 66s
+  [130/278] conv 133  pp726-729  | 2.4 conv/s  ETA 61s
+  [140/278] conv 143  pp778-785  | 2.4 conv/s  ETA 57s
+  [150/278] conv 153  pp858-862  | 2.4 conv/s  ETA 53s
+  [160/278] conv 165  pp920-925  | 2.4 conv/s  ETA 50s
+  [170/278] conv 175  pp978-985  | 2.4 conv/s  ETA 46s
+  [180/278] conv 188  pp1057-1064  | 2.3 conv/s  ETA 42s
+  [190/278] conv 200  pp1143-1147  | 2.3 conv/s  ETA 38s
+  [200/278] conv 210  pp1204-1208  | 2.3 conv/s  ETA 33s
+  [210/278] conv 220  pp1255-1259  | 2.3 conv/s  ETA 29s
+  [220/278] conv 230  pp1316-1323  | 2.3 conv/s  ETA 25s
+  [230/278] conv 240  pp1391-1396  | 2.3 conv/s  ETA 21s
+  [240/278] conv 250  pp1476-1483  | 2.3 conv/s  ETA 17s
+  [250/278] conv 261  pp1543-1549  | 2.3 conv/s  ETA 12s
+  [260/278] conv 271  pp1596-1600  | 2.3 conv/s  ETA 8s
+  [270/278] conv 282  pp1660-1685  | 2.3 conv/s  ETA 4s
+  [278/278] conv 291  pp1758-1764  | 2.3 conv/s  ETA 0s
+
+Parseo completo en 122.2s. Escribiendo salidas...
+  -> csv/convocatorias_por_ciudad.csv  (1431 filas)
+  -> csv/convocatorias_por_ciudad.xlsx
+  -> csv/convocatorias_resumen.csv  (278 filas)
+  -> csv/convocatorias_resumen.xlsx
+  -> csv/convocatorias_raw.json
+Listo.
