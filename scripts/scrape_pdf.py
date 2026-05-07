@@ -442,62 +442,33 @@ def parse_identificacion_visual(
     for i, row in enumerate(rows):
         joined = " ".join(w["text"] for w in row)
         if RE_DENOMINACION.search(joined) and (RE_CODIGO_GRADO.search(joined) or RE_ASIGNACION.search(joined)):
-            # Para cada etiqueta, encontrar la posición X de su PRIMERA palabra en el row
+            # Para cada etiqueta, encontrar la posición X de su PRIMERA palabra en el row.
+            # "Asignaci" cubre casos atípicos donde el PDF parte la palabra "Asignación"
+            # en dos líneas (e.g. "Asignaci" arriba y "ón" abajo).
             label_row1_xs = _find_label_xs_in_row(row, {
                 "denominacion": ["Denominación", "Denominacion"],
                 "codigo_grado": ["Código", "Codigo"],
                 "nivel": ["Nivel"],
-                "asignacion": ["Asignación", "Asignacion"],
+                "asignacion": ["Asignación", "Asignacion", "Asignaci"],
             })
             if len(label_row1_xs) >= 2:
                 label_row1_idx = i
                 break
 
-    # ----- Valores de las filas siguientes -----
-    # Buscamos en hasta 5 filas siguientes y filtramos palabras que parezcan
-    # continuación de etiqueta (terminan en ":" o son fragmentos conocidos).
-    LABEL_CONTINUATION = {
-        "jerárquico:", "jerarquico:", "básica:", "basica:", "Grado:", "del",
-        "empleo:", "y", "Vigencia",
-    }
-    if label_row1_idx is not None and label_row1_xs:
-        for j in range(label_row1_idx + 1, min(label_row1_idx + 5, len(rows))):
-            row = rows[j]
-            cells = split_row_into_cells(row, gap_threshold=8.0)
-            for c in cells:
-                text = c["text"].strip()
-                # Saltar si la celda parece sólo continuación de etiqueta
-                tokens = text.split()
-                if tokens and all(t in LABEL_CONTINUATION or t.endswith(":") for t in tokens):
-                    continue
-
-                key = _closest_label(c["x0"], label_row1_xs)
-                if key == "denominacion" and "denominacion_empleo" not in out:
-                    out["denominacion_empleo"] = text
-                elif key == "codigo_grado" and "codigo_grado" not in out:
-                    out["codigo_grado"] = text
-                elif key == "nivel" and "nivel_jerarquico" not in out:
-                    # Limpiar continuación si quedó pegada al inicio
-                    cleaned = re.sub(r"^(?:jer[áa]rquico:?)\s*", "", text, flags=re.IGNORECASE).strip()
-                    if cleaned and not cleaned.endswith(":"):
-                        out["nivel_jerarquico"] = cleaned
-                elif key == "asignacion":
-                    if "asignacion_basica" not in out and "$" in text:
-                        m = re.search(r"\$[\d\.,]+", text)
-                        if m:
-                            out["asignacion_basica"] = m.group(0)
-                    if "vigencia_salario" not in out:
-                        m = re.search(r"Vigencia\s+(\d{4})", text, re.IGNORECASE)
-                        if m:
-                            out["vigencia_salario"] = m.group(1)
-            if (
-                "denominacion_empleo" in out
-                and "asignacion_basica" in out
-                and "nivel_jerarquico" in out
-            ):
+    # Fallback: si no detectamos la X de la columna "asignacion" (p.ej. porque la
+    # palabra "Asignación" se partió en dos líneas), buscar en filas siguientes la
+    # primera palabra que comience con "$" y usar su x0 como inicio de columna.
+    if label_row1_idx is not None and "asignacion" not in label_row1_xs:
+        for j in range(label_row1_idx + 1, min(label_row1_idx + 6, len(rows))):
+            for w in rows[j]:
+                if w["text"].startswith("$"):
+                    label_row1_xs["asignacion"] = w["x0"]
+                    break
+            if "asignacion" in label_row1_xs:
                 break
 
     # ----- Localizar fila de etiquetas (Ubicación / Número / Dependencia) -----
+    # Lo detectamos ANTES de procesar la sección 1 para usarlo como tope superior.
     label_row2_idx: int | None = None
     label_row2_xs: dict[str, float] = {}
     for i, row in enumerate(rows):
@@ -513,6 +484,80 @@ def parse_identificacion_visual(
             ):
                 label_row2_idx = i
                 break
+
+    # ----- Valores de las filas siguientes -----
+    # Recolectamos las palabras de cada columna a lo largo de las filas que
+    # están entre la fila de etiquetas (sec. 1) y la fila de etiquetas (sec. 2).
+    # Esto evita mezclar palabras de la sección 2 (Ubicación/Número/Dependencia)
+    # con la sección 1 cuando los datos quedan apilados en pocas filas.
+    LABEL_CONTINUATION = {
+        "jerárquico:", "jerarquico:", "básica:", "basica:", "Grado:", "del",
+        "empleo:", "y", "Vigencia",
+    }
+    LABEL_TOKENS_SEC1 = {
+        "Denominación", "Denominacion", "del", "empleo:", "Código", "Codigo", "y",
+        "Grado:", "Nivel", "jerárquico:", "jerarquico:", "Asignación", "Asignacion",
+        "Asignaci", "ón", "básica:", "basica:",
+    }
+    if label_row1_idx is not None and label_row1_xs:
+        col_words: dict[str, list[dict]] = {
+            "denominacion": [],
+            "codigo_grado": [],
+            "nivel": [],
+            "asignacion": [],
+        }
+        # Tope superior: la siguiente fila de etiquetas (Ubicación/Número/Dependencia)
+        # o, si no se detectó, label_row1_idx + 5.
+        end_idx = label_row2_idx if label_row2_idx is not None else min(label_row1_idx + 5, len(rows))
+        for j in range(label_row1_idx + 1, end_idx):
+            row = rows[j]
+            for w in row:
+                key = _closest_label(w["x0"], label_row1_xs)
+                if key in col_words:
+                    col_words[key].append(w)
+
+        # Para asignación, también incluimos la propia fila de etiquetas (los montos
+        # a veces aparecen en la misma línea que "Asignación básica:", e.g. conv 38).
+        for w in rows[label_row1_idx]:
+            if w["text"] in LABEL_TOKENS_SEC1:
+                continue
+            key = _closest_label(w["x0"], label_row1_xs)
+            if key == "asignacion":
+                col_words["asignacion"].append(w)
+
+        def _strip_label_cont(text: str) -> str:
+            tokens = [t for t in text.split() if t not in LABEL_CONTINUATION and not (t.endswith(":") and t != ":")]
+            return " ".join(tokens).strip()
+
+        denom = _strip_label_cont(" ".join(w["text"] for w in col_words["denominacion"]))
+        if denom:
+            out["denominacion_empleo"] = denom
+
+        cg = _strip_label_cont(" ".join(w["text"] for w in col_words["codigo_grado"]))
+        if cg:
+            out["codigo_grado"] = cg
+
+        nivel = _strip_label_cont(" ".join(w["text"] for w in col_words["nivel"]))
+        # Si "Asignación" se partió y el fragmento "ón" cayó en la columna nivel,
+        # eliminar todo lo que sigue (incluyendo $XXX, "básica:", "Vigencia", etc.)
+        nivel = re.sub(r"\s*\bón\b.*$", "", nivel).strip()
+        nivel = re.sub(r"\s*\$.*$", "", nivel).strip()
+        if nivel:
+            out["nivel_jerarquico"] = nivel
+
+        # Asignación básica: buscar el patrón $X.XXX.XXX en el texto de la columna.
+        # Tolera espacios entre $ y los dígitos, y entre dígitos cuando el PDF parte
+        # el monto en varias líneas (e.g. "$6.334.8 64" -> "$6.334.864").
+        asig_text = " ".join(w["text"] for w in col_words["asignacion"])
+        m_sal = re.search(r"\$\s*[\d][\d\.,]*(?:\s+\d+)*", asig_text)
+        if m_sal:
+            raw = m_sal.group(0)
+            normalized = re.sub(r"\$\s+", "$", raw)
+            normalized = re.sub(r"(\d)\s+(\d)", r"\1\2", normalized)
+            out["asignacion_basica"] = normalized
+        m_vig = re.search(r"Vigencia\s+(\d{4})", asig_text, re.IGNORECASE)
+        if m_vig:
+            out["vigencia_salario"] = m_vig.group(1)
 
     # ----- Procesar filas siguientes hasta sección 2 -----
     dep_lines: list[str] = []  # acumulamos para procesar Proceso al final
@@ -1090,6 +1135,21 @@ def parse_convocatoria_text(
         for k, v in ident_data.items():
             setattr(rec, k, v)
         rec.ubicaciones = parse_ubicaciones(ubic_lines)
+
+    # Fallback final para asignacion_basica: si tras procesar todas las páginas
+    # aún está vacía, hacer una búsqueda regex sobre el texto completo de la
+    # convocatoria. Cubre PDFs muy mal formateados donde la sección
+    # IDENTIFICACIÓN tiene texto roto (palabras con letras separadas por espacios).
+    if not rec.asignacion_basica and pdf is not None:
+        try:
+            for p in range(span.pagina_inicio, span.pagina_fin + 1):
+                page_text = pdf.pages[p - 1].extract_text() or ""
+                m = re.search(r"\$\s*[\d][\d\.,]{6,}", page_text)
+                if m:
+                    rec.asignacion_basica = re.sub(r"\$\s+", "$", m.group(0)).strip(",.")
+                    break
+        except Exception:
+            pass
 
     if "requisitos" in sections:
         for k, v in parse_requisitos(sections["requisitos"]).items():

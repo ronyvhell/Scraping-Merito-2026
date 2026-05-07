@@ -86,9 +86,16 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
     --card: #fff;
     --primary: #1e3a8a;
     --primary-light: #3b82f6;
+    --primary-soft: #eef4ff;
+    --accent: #0ea5e9;
     --text: #1f2937;
     --muted: #6b7280;
     --border: #e5e7eb;
+    --success: #059669;
+    --warning: #d97706;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 20px 60px rgba(0,0,0,0.25);
   }
   * { box-sizing: border-box; }
   body {
@@ -124,25 +131,120 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   .summary .stat .label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
   .summary .stat .value { font-size: 1.4rem; font-weight: 600; color: var(--primary); margin-top: 0.25rem; }
   .container { padding: 1rem 1.5rem 4rem; }
-  .filters {
+
+  /* ---------- Filtros ---------- */
+  .filters-card {
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1rem;
+    border-radius: 10px;
+    padding: 1rem 1.25rem 1.1rem;
     margin-bottom: 1rem;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 0.75rem;
+    box-shadow: var(--shadow-sm);
   }
-  .filters label { display: block; font-size: 0.75rem; color: var(--muted); margin-bottom: 0.25rem; font-weight: 500; }
-  .filters select, .filters input {
-    width: 100%;
-    padding: 0.45rem 0.5rem;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    font-size: 0.85rem;
+  .filters-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.85rem;
+  }
+  .filters-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .filters-actions { display: flex; gap: 0.5rem; align-items: center; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: var(--primary-soft);
+    color: var(--primary);
+    border: 1px solid #dbe6fb;
+    border-radius: 999px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+  .clear-btn {
     background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.45rem 0.85rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: all 0.15s;
   }
+  .clear-btn:hover { background: #f3f4f6; border-color: #cbd5e1; }
+  .clear-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .search-row {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 0.75rem;
+    margin-bottom: 0.85rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .search-row:focus-within { border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+  .search-row svg { color: var(--muted); flex-shrink: 0; }
+  .search-row input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 0.65rem 0.5rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    color: var(--text);
+  }
+
+  .filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.7rem;
+  }
+  .filter-field { display: flex; flex-direction: column; gap: 0.25rem; }
+  .filter-field label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .filter-field select {
+    width: 100%;
+    padding: 0.45rem 0.55rem;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    background: #fff
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>")
+      no-repeat right 0.55rem center;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    padding-right: 1.7rem;
+    cursor: pointer;
+    color: var(--text);
+    transition: border-color 0.15s;
+  }
+  .filter-field select:hover { border-color: #cbd5e1; }
+  .filter-field select:focus { outline: none; border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+
+  /* ---------- Tabla ---------- */
   .table-wrap {
     background: var(--card);
     border: 1px solid var(--border);
@@ -158,10 +260,9 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
     text-transform: uppercase;
     letter-spacing: 0.3px;
   }
-  table.dataTable tbody td {
-    font-size: 0.82rem;
-    vertical-align: top;
-  }
+  table.dataTable tbody td { font-size: 0.82rem; vertical-align: top; }
+  table.dataTable tbody tr { cursor: pointer; }
+  table.dataTable tbody tr:hover { background: #f9fafb; }
   td.truncate { max-width: 320px; }
   td.truncate .full { display: none; }
   td.truncate .preview { display: inline; }
@@ -174,28 +275,9 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
     margin-left: 0.25rem;
     text-decoration: underline;
   }
-  .badge {
-    display: inline-block;
-    padding: 0.15rem 0.5rem;
-    background: #eef2ff;
-    color: var(--primary);
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-  }
   .num { text-align: right; font-variant-numeric: tabular-nums; }
-  .clear-btn {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 0.4rem 0.8rem;
-    font-size: 0.85rem;
-    cursor: pointer;
-    align-self: end;
-  }
-  .clear-btn:hover { background: #f3f4f6; }
-  details.row-detail summary { cursor: pointer; color: var(--primary-light); }
-  /* Footer */
+
+  /* ---------- Footer ---------- */
   footer.site-footer {
     margin-top: 3rem;
     padding: 1.25rem 1.5rem;
@@ -215,25 +297,199 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   }
   footer.site-footer a:hover { text-decoration: underline; }
   footer.site-footer svg { vertical-align: middle; }
-  /* Modal */
+
+  /* ---------- Modal de detalle ---------- */
   .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-    display: none; align-items: center; justify-content: center; z-index: 100;
+    position: fixed; inset: 0; background: rgba(15,23,42,0.55);
+    backdrop-filter: blur(3px);
+    display: none; align-items: flex-start; justify-content: center;
+    z-index: 100; padding: 2rem 1rem; overflow-y: auto;
+    animation: fadeIn 0.18s ease-out;
   }
   .modal-overlay.open { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
   .modal {
-    background: #fff; border-radius: 8px; max-width: 900px; width: 90%;
-    max-height: 85vh; overflow-y: auto; padding: 1.5rem;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    background: #fff;
+    border-radius: 14px;
+    max-width: 1080px;
+    width: 100%;
+    max-height: calc(100vh - 4rem);
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    animation: slideUp 0.22s ease-out;
   }
-  .modal h2 { margin-top: 0; color: var(--primary); }
-  .modal .field { margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
-  .modal .field:last-child { border-bottom: none; }
-  .modal .field-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem; }
-  .modal .field-value { white-space: pre-wrap; word-break: break-word; }
-  .modal .close-btn {
-    float: right; background: transparent; border: none; font-size: 1.5rem;
-    cursor: pointer; color: var(--muted);
+  .modal-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: #fff;
+    padding: 1.5rem 1.75rem 1.25rem;
+    position: relative;
+  }
+  .modal-header .conv-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 999px;
+    padding: 0.2rem 0.7rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+  .modal-header h2 {
+    margin: 0 0 0.4rem 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.25;
+    padding-right: 3rem;
+  }
+  .modal-header .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+    opacity: 0.95;
+  }
+  .modal-header .meta span { display: inline-flex; align-items: center; gap: 0.3rem; }
+  .modal-header .meta .dot { color: rgba(255,255,255,0.5); }
+  .modal-close {
+    position: absolute;
+    top: 0.85rem;
+    right: 1rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.18);
+    border: none;
+    color: #fff;
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+  }
+  .modal-close:hover { background: rgba(255,255,255,0.32); }
+
+  .modal-body { padding: 1.5rem 1.75rem 2rem; overflow-y: auto; flex: 1; }
+
+  .quick-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .qs {
+    background: linear-gradient(180deg, #fafbff, #f3f6fc);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem 0.9rem;
+  }
+  .qs-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .qs-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-top: 0.2rem;
+    word-break: break-word;
+  }
+  .qs.salary .qs-value { color: var(--success); }
+
+  .section {
+    margin-bottom: 1.4rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.7rem 1rem;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .section-head svg { color: var(--primary-light); }
+  .section-body { padding: 0.9rem 1rem; }
+
+  .field-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.85rem 1.25rem;
+  }
+  .field-grid .f { display: flex; flex-direction: column; gap: 0.15rem; }
+  .field-grid .f-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-weight: 600;
+  }
+  .field-grid .f-value {
+    font-size: 0.92rem;
+    color: var(--text);
+    word-break: break-word;
+    line-height: 1.4;
+  }
+
+  .longtext {
+    font-size: 0.92rem;
+    color: var(--text);
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .ubicaciones-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .ubic-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: var(--primary-soft);
+    color: var(--primary);
+    border: 1px solid #dbe6fb;
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 500;
+  }
+  .ubic-tag .count {
+    background: var(--primary);
+    color: #fff;
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  @media (max-width: 640px) {
+    .modal-header h2 { font-size: 1.15rem; }
+    .modal-body { padding: 1rem; }
+    .modal-header { padding: 1.1rem 1.1rem 0.9rem; }
   }
 </style>
 </head>
@@ -251,40 +507,56 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 </section>
 
 <div class="container">
-  <div class="filters">
-    <div>
-      <label>Convocatoria N°</label>
-      <select id="filter-numero"><option value="">— todas —</option></select>
+  <div class="filters-card">
+    <div class="filters-head">
+      <div class="filters-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        Filtros
+        <span class="chip" id="active-count" style="display:none">0 activos</span>
+      </div>
+      <div class="filters-actions">
+        <button class="clear-btn" id="btn-clear" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Limpiar
+        </button>
+      </div>
     </div>
-    <div>
-      <label>Denominación del empleo</label>
-      <select id="filter-denominacion"><option value="">— todas —</option></select>
+
+    <div class="search-row">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="search" id="filter-search" placeholder="Buscar varias palabras (sin importar tildes ni mayúsculas). Ej: ingenieria sistemas">
     </div>
-    <div>
-      <label>Código y Grado</label>
-      <select id="filter-codigo"><option value="">— todos —</option></select>
+
+    <div class="filters-grid">
+      <div class="filter-field">
+        <label>Convocatoria N°</label>
+        <select id="filter-numero"><option value="">Todas</option></select>
+      </div>
+      <div class="filter-field">
+        <label>Denominación</label>
+        <select id="filter-denominacion"><option value="">Todas</option></select>
+      </div>
+      <div class="filter-field">
+        <label>Código y Grado</label>
+        <select id="filter-codigo"><option value="">Todos</option></select>
+      </div>
+      <div class="filter-field">
+        <label>Nivel jerárquico</label>
+        <select id="filter-nivel"><option value="">Todos</option></select>
+      </div>
+      <div class="filter-field">
+        <label>Ciudad</label>
+        <select id="filter-ciudad"><option value="">Todas</option></select>
+      </div>
+      <div class="filter-field">
+        <label>Subgrupo / Sede</label>
+        <select id="filter-subgrupo"><option value="">Todos</option></select>
+      </div>
+      <div class="filter-field">
+        <label>Proceso</label>
+        <select id="filter-proceso"><option value="">Todos</option></select>
+      </div>
     </div>
-    <div>
-      <label>Nivel jerárquico</label>
-      <select id="filter-nivel"><option value="">— todos —</option></select>
-    </div>
-    <div>
-      <label>Ciudad</label>
-      <select id="filter-ciudad"><option value="">— todas —</option></select>
-    </div>
-    <div>
-      <label>Subgrupo / Sede</label>
-      <select id="filter-subgrupo"><option value="">— todos —</option></select>
-    </div>
-    <div>
-      <label>Proceso</label>
-      <select id="filter-proceso"><option value="">— todos —</option></select>
-    </div>
-    <div>
-      <label>Buscar texto (en cualquier campo)</label>
-      <input type="search" id="filter-search" placeholder="Ej: derecho, ingeniería, anticorrupción">
-    </div>
-    <button class="clear-btn" id="btn-clear">Limpiar filtros</button>
   </div>
 
   <div class="table-wrap">
@@ -306,9 +578,13 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 
 <div class="modal-overlay" id="modal">
   <div class="modal">
-    <button class="close-btn" id="modal-close">&times;</button>
-    <h2 id="modal-title"></h2>
-    <div id="modal-body"></div>
+    <div class="modal-header">
+      <button class="modal-close" id="modal-close" aria-label="Cerrar">&times;</button>
+      <div class="conv-badge" id="m-badge">Convocatoria</div>
+      <h2 id="m-title"></h2>
+      <div class="meta" id="m-meta"></div>
+    </div>
+    <div class="modal-body" id="m-body"></div>
   </div>
 </div>
 
@@ -420,9 +696,46 @@ $(function () {
     ],
   });
 
-  // Conectar selects a DataTable
+  // ---------- Filtros ----------
+  // Normaliza un string para búsqueda: minúsculas + sin acentos/diacríticos.
+  // Esto permite que "ingenieria de sistemas" matchee "Ingeniería de Sistemas".
+  function normalize(s) {
+    return String(s == null ? "" : s)
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+  }
+
+  // Cache del texto normalizado por fila (concatenando todas las columnas).
+  // Acelera la búsqueda y se calcula una sola vez.
+  const HAYSTACK_BY_INDEX = DATA.map(r => normalize(Object.values(r).join(" \u0001 ")));
+
+  // Estado de los filtros (los selects siguen filtrando por columna en DataTables,
+  // pero el buscador global lo manejamos vía $.fn.dataTable.ext.search para
+  // tener control fino sobre normalización y multi-término).
+  let SEARCH_TERMS = [];
+
+  $.fn.dataTable.ext.search.push(function (settings, searchData, dataIndex) {
+    if (SEARCH_TERMS.length === 0) return true;
+    const haystack = HAYSTACK_BY_INDEX[dataIndex] || "";
+    return SEARCH_TERMS.every(t => haystack.includes(t));
+  });
+
+  function updateActiveCount() {
+    const selects = ["#filter-numero","#filter-denominacion","#filter-codigo","#filter-nivel","#filter-ciudad","#filter-subgrupo","#filter-proceso"];
+    let active = selects.filter(s => $(s).val()).length;
+    if ($("#filter-search").val()) active += 1;
+    const $chip = $("#active-count");
+    if (active > 0) {
+      $chip.text(`${active} activo${active===1?"":"s"}`).show();
+      $("#btn-clear").prop("disabled", false);
+    } else {
+      $chip.hide();
+      $("#btn-clear").prop("disabled", true);
+    }
+  }
+
   function applyFilters() {
-    // Limpiar filtros previos
     dt.columns().search("");
     const map = {
       "numero_convocatoria": $("#filter-numero").val(),
@@ -439,40 +752,226 @@ $(function () {
         dt.column(colIdx).search(val ? "^" + val.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$" : "", true, false);
       }
     });
-    dt.search($("#filter-search").val() || "");
+    // Búsqueda global: dividir en términos, normalizar cada uno
+    const raw = ($("#filter-search").val() || "").trim();
+    SEARCH_TERMS = raw
+      ? normalize(raw).split(/\s+/).filter(Boolean)
+      : [];
     dt.draw();
+    updateActiveCount();
   }
 
   $("#filter-numero, #filter-denominacion, #filter-codigo, #filter-nivel, #filter-ciudad, #filter-subgrupo, #filter-proceso")
     .on("change", applyFilters);
-  $("#filter-search").on("input", applyFilters);
+  // Debounce para evitar redraws en cada keypress
+  let searchTimer = null;
+  $("#filter-search").on("input", function () {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(applyFilters, 180);
+  });
   $("#btn-clear").on("click", function () {
-    $(".filters select").val("");
+    $(".filter-field select").val("");
     $("#filter-search").val("");
     applyFilters();
   });
 
-  // Click en una fila → abrir modal con detalle completo
+  // ---------- Modal de detalle ----------
+  // Iconos SVG inline
+  const ICONS = {
+    id:       '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M15 8h3M15 12h3M7 16h10"/></svg>',
+    pin:      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+    book:     '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+    target:   '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+    brain:    '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44A2.5 2.5 0 0 1 4 17.5a2.5 2.5 0 0 1-1.98-3A2.5 2.5 0 0 1 2 12a2.5 2.5 0 0 1 .02-2.5A2.5 2.5 0 0 1 4 6.5a2.5 2.5 0 0 1 .54-2A2.5 2.5 0 0 1 7 2"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44A2.5 2.5 0 0 0 20 17.5a2.5 2.5 0 0 0 1.98-3A2.5 2.5 0 0 0 22 12a2.5 2.5 0 0 0-.02-2.5A2.5 2.5 0 0 0 20 6.5a2.5 2.5 0 0 0-.54-2A2.5 2.5 0 0 0 17 2"/></svg>',
+    check:    '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+    clipboard:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>',
+    info:     '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+    cash:     '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+    users:    '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    calendar: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+    layers:   '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
+  };
+
+  // Mapa de campos por sección, en orden
+  const SECTION_DEFS = [
+    { id: "ubicacion", title: "Ubicación y dependencia", icon: ICONS.pin, fields: [
+      ["dependencia_inicial", "Dependencia"],
+      ["proceso", "Proceso"],
+      ["subgrupo_ubicacion", "Subgrupo / Sede"],
+      ["ciudad", "Ciudad"],
+      ["cantidad_cargos_ciudad", "Cargos en la ciudad"],
+    ]},
+    { id: "requisitos", title: "Requisitos mínimos", icon: ICONS.check, fields: [
+      ["estudio", "Estudios"],
+      ["experiencia", "Experiencia"],
+      ["equivalencias", "Equivalencias"],
+    ]},
+    { id: "proposito", title: "Propósito y funciones", icon: ICONS.target, fields: [
+      ["proposito", "Propósito"],
+      ["funciones", "Funciones"],
+    ]},
+    { id: "conocimientos", title: "Conocimientos esenciales", icon: ICONS.brain, fields: [
+      ["conocimientos_especificos", "Específicos"],
+      ["conocimientos_comunes", "Comunes"],
+      ["competencias_comportamentales", "Competencias comportamentales"],
+    ]},
+    { id: "pruebas", title: "Pruebas y admisión", icon: ICONS.clipboard, fields: [
+      ["pruebas", "Pruebas"],
+      ["lista_admitidos_reclamaciones", "Lista de admitidos / Reclamaciones"],
+    ]},
+    { id: "fechas", title: "Fechas y divulgación", icon: ICONS.calendar, fields: [
+      ["fecha_fijacion", "Fecha de fijación"],
+      ["termino_inscripciones", "Término de inscripciones"],
+      ["medio_divulgacion", "Medio de divulgación"],
+    ]},
+    { id: "notas", title: "Notas generales", icon: ICONS.info, fields: [
+      ["notas_generales", "Notas"],
+    ]},
+  ];
+
+  // Campos considerados "largos" → se renderizan como longtext en lugar de field-grid
+  const LONGTEXT_FIELDS = new Set([
+    "estudio","experiencia","equivalencias","proposito","funciones",
+    "conocimientos_especificos","conocimientos_comunes","competencias_comportamentales",
+    "lista_admitidos_reclamaciones","pruebas","notas_generales",
+    "termino_inscripciones","medio_divulgacion","dependencia_inicial",
+  ]);
+
+  // Para mostrar todas las ubicaciones de la convocatoria, agrupamos las filas
+  // del CSV por número de convocatoria.
+  const BY_CONV = (() => {
+    const m = new Map();
+    DATA.forEach(r => {
+      const k = String(r.numero_convocatoria);
+      if (!m.has(k)) m.set(k, []);
+      m.get(k).push(r);
+    });
+    return m;
+  })();
+
+  function renderModal(data) {
+    const conv = String(data.numero_convocatoria);
+    const allRows = BY_CONV.get(conv) || [data];
+
+    // Header
+    $("#m-badge").text(`Convocatoria N° ${data.numero_convocatoria || "—"}`);
+    $("#m-title").text(data.denominacion_empleo || "Sin denominación");
+
+    const $meta = $("#m-meta").empty();
+    const metaItems = [];
+    if (data.codigo_grado) metaItems.push(`${ICONS.layers} <span>${escapeHtml(data.codigo_grado)}</span>`);
+    if (data.nivel_jerarquico) metaItems.push(`<span>${escapeHtml(data.nivel_jerarquico)}</span>`);
+    if (data.pagina_inicio) metaItems.push(`<span>Pág. ${escapeHtml(data.pagina_inicio)}${data.pagina_fin && data.pagina_fin !== data.pagina_inicio ? "–"+escapeHtml(data.pagina_fin) : ""}</span>`);
+    metaItems.forEach((html, i) => {
+      if (i > 0) $meta.append('<span class="dot">•</span>');
+      $meta.append(`<span>${html}</span>`);
+    });
+
+    // Body
+    const $body = $("#m-body").empty();
+
+    // Quick stats
+    const totalCargos = data.num_cargos_total || allRows.reduce((s,r)=>s+(parseInt(r.cantidad_cargos_ciudad)||0),0);
+    const ciudadesDistintas = new Set(allRows.map(r=>r.ciudad).filter(Boolean)).size;
+    const stats = [
+      { cls: "salary", label: "Asignación básica", icon: ICONS.cash, value: data.asignacion_basica || "No disponible" },
+      { cls: "", label: "Vigencia", icon: ICONS.calendar, value: data.vigencia_salario || "—" },
+      { cls: "", label: "Total de cargos", icon: ICONS.users, value: (totalCargos || "—").toLocaleString ? Number(totalCargos).toLocaleString("es-CO") : totalCargos },
+      { cls: "", label: "Ciudades", icon: ICONS.pin, value: ciudadesDistintas || 1 },
+    ];
+    const $qs = $('<div class="quick-stats"></div>');
+    stats.forEach(s => {
+      $qs.append(`<div class="qs ${s.cls}"><div class="qs-label">${s.icon}${escapeHtml(s.label)}</div><div class="qs-value">${escapeHtml(String(s.value))}</div></div>`);
+    });
+    $body.append($qs);
+
+    // Sección "Identificación" como field-grid compacto
+    const idFields = [
+      ["denominacion_empleo", "Denominación"],
+      ["codigo_grado", "Código y Grado"],
+      ["nivel_jerarquico", "Nivel jerárquico"],
+      ["asignacion_basica", "Asignación básica"],
+      ["vigencia_salario", "Vigencia"],
+      ["num_cargos_total", "Total de cargos"],
+    ];
+    let idHtml = '<div class="field-grid">';
+    idFields.forEach(([k, lbl]) => {
+      const v = data[k];
+      if (v == null || v === "") return;
+      idHtml += `<div class="f"><div class="f-label">${escapeHtml(lbl)}</div><div class="f-value">${escapeHtml(String(v))}</div></div>`;
+    });
+    idHtml += '</div>';
+    $body.append(`<div class="section"><div class="section-head">${ICONS.id}Identificación del empleo</div><div class="section-body">${idHtml}</div></div>`);
+
+    // Sección "Ubicaciones" especial: tags con todas las ciudades de la conv
+    const ubicSet = new Map(); // key=subgrupo|ciudad -> cantidad
+    allRows.forEach(r => {
+      if (!r.ciudad) return;
+      const key = (r.subgrupo_ubicacion || "") + "|" + r.ciudad;
+      ubicSet.set(key, {
+        subgrupo: r.subgrupo_ubicacion || "",
+        ciudad: r.ciudad,
+        cantidad: (ubicSet.get(key)?.cantidad || 0) + (parseInt(r.cantidad_cargos_ciudad)||0),
+      });
+    });
+    if (ubicSet.size > 0) {
+      let html = '<div class="ubicaciones-list">';
+      Array.from(ubicSet.values())
+        .sort((a,b)=>String(a.ciudad).localeCompare(String(b.ciudad),"es"))
+        .forEach(u => {
+          const lbl = u.subgrupo ? `${u.subgrupo} — ${u.ciudad}` : u.ciudad;
+          html += `<span class="ubic-tag">${escapeHtml(lbl)}${u.cantidad?`<span class="count">${u.cantidad}</span>`:""}</span>`;
+        });
+      html += '</div>';
+      // Plus dependencia/proceso como field-grid abajo
+      const extras = [["dependencia_inicial","Dependencia inicial"], ["proceso","Proceso"]]
+        .filter(([k]) => data[k] && data[k] !== "")
+        .map(([k,lbl]) => `<div class="f"><div class="f-label">${escapeHtml(lbl)}</div><div class="f-value">${escapeHtml(String(data[k]))}</div></div>`)
+        .join("");
+      const extrasHtml = extras ? `<div class="field-grid" style="margin-top:0.85rem">${extras}</div>` : "";
+      $body.append(`<div class="section"><div class="section-head">${ICONS.pin}Ubicaciones (${ubicSet.size}) y dependencia</div><div class="section-body">${html}${extrasHtml}</div></div>`);
+    }
+
+    // Resto de secciones
+    const SECTIONS_REMAINING = SECTION_DEFS.filter(s => s.id !== "ubicacion");
+    SECTIONS_REMAINING.forEach(sec => {
+      const items = sec.fields.filter(([k]) => data[k] != null && data[k] !== "");
+      if (items.length === 0) return;
+      let inner = "";
+      const longItems = items.filter(([k]) => LONGTEXT_FIELDS.has(k));
+      const shortItems = items.filter(([k]) => !LONGTEXT_FIELDS.has(k));
+      if (shortItems.length > 0) {
+        inner += '<div class="field-grid">';
+        shortItems.forEach(([k, lbl]) => {
+          inner += `<div class="f"><div class="f-label">${escapeHtml(lbl)}</div><div class="f-value">${escapeHtml(String(data[k]))}</div></div>`;
+        });
+        inner += '</div>';
+      }
+      longItems.forEach(([k, lbl], i) => {
+        inner += `<div${i>0||shortItems.length>0?' style="margin-top:1rem"':""}><div class="f-label" style="margin-bottom:0.3rem">${escapeHtml(lbl)}</div><div class="longtext">${escapeHtml(String(data[k]))}</div></div>`;
+      });
+      $body.append(`<div class="section"><div class="section-head">${sec.icon}${escapeHtml(sec.title)}</div><div class="section-body">${inner}</div></div>`);
+    });
+
+    $("#modal").addClass("open");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeModal() {
+    $("#modal").removeClass("open");
+    document.body.style.overflow = "";
+  }
+
   $("#tabla tbody").on("click", "tr", function (e) {
     if ($(e.target).hasClass("toggle")) return;
     const data = dt.row(this).data();
     if (!data) return;
-    $("#modal-title").text(`Convocatoria N° ${data.numero_convocatoria} — ${data.denominacion_empleo || ""}`);
-    const $body = $("#modal-body").empty();
-    COLUMNS.forEach(([key, label]) => {
-      const val = data[key];
-      if (val == null || val === "") return;
-      $body.append(
-        `<div class="field"><div class="field-label">${escapeHtml(label)}</div>` +
-        `<div class="field-value">${escapeHtml(String(val))}</div></div>`
-      );
-    });
-    $("#modal").addClass("open");
+    renderModal(data);
   });
-  $("#modal-close, #modal").on("click", function (e) {
-    if (e.target.id === "modal" || e.target.id === "modal-close") {
-      $("#modal").removeClass("open");
-    }
+  $("#modal-close").on("click", closeModal);
+  $("#modal").on("click", function (e) { if (e.target.id === "modal") closeModal(); });
+  $(document).on("keydown", function (e) {
+    if (e.key === "Escape" && $("#modal").hasClass("open")) closeModal();
   });
 });
 </script>
